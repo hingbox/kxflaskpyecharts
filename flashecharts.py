@@ -4,6 +4,7 @@ import random
 from pyecharts import Scatter3D
 #from pyecharts.constants import DEFAULT_HOSTS
 from flask import Flask, render_template
+from pyecharts_javascripthon.api import TRANSLATOR
 from pyecharts import Bar
 app = Flask(__name__)
 
@@ -67,6 +68,34 @@ def app_2():
                            script_list=gauge.get_js_dependencies())
     return ret_html
 
+@app.route('/three')
+def app_3():
+    _bar = bar_chart()
+    javascript_snippet = TRANSLATOR.translate(_bar.options)
+    return render_template(
+            "mypyecharts.html",
+            chart_id=_bar.chart_id,
+            host=REMOTE_HOST,
+            renderer=_bar.renderer,
+            my_width="100%",
+            my_height=600,
+            custom_function=javascript_snippet.function_snippet,
+            options=javascript_snippet.option_snippet,
+            script_list=_bar.get_js_dependencies(),
+    )
+
+def bar_chart():
+    bar = Bar("我的第一个图表", "这里是副标题")
+    # bar.use_theme('dark')
+    attr = ["衬衫", "羊毛衫", "雪纺衫", "裤子", "高跟鞋", "袜子"]
+    bar.add(
+        "商家A", attr, [5, 20, 36, 10, 75, 90],is_more_utils=True
+    )
+    bar.add(
+        "商家B", attr, [5, 20, 36, 10, 75, 90],is_more_utils=True
+    )
+    return bar
+
 
 if __name__ == '__main__':
-    app.run(port=9999)
+    app.run(host="127.0.0.1", port=9999)
